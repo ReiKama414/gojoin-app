@@ -13,79 +13,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Search, MapPin, Calendar, Users, Star } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { EventDetails, mockEventDetails } from '@/lib/data';
 
 const { width } = Dimensions.get('window');
-
-interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  image: string;
-  category: string;
-  attendees: number;
-  maxAttendees: number;
-  rating: number;
-  price: string;
-  featured?: boolean;
-}
-
-const mockEvents: Event[] = [
-  {
-    id: '1',
-    title: '台北國際音樂節 2025',
-    date: '2025-02-15',
-    time: '19:00',
-    location: '台北市信義區',
-    image: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
-    category: '音樂',
-    attendees: 1250,
-    maxAttendees: 2000,
-    rating: 4.8,
-    price: 'NT$ 1,200',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'AI 科技展覽會',
-    date: '2025-02-20',
-    time: '10:00',
-    location: '南港展覽館',
-    image: 'https://images.pexels.com/photos/8761581/pexels-photo-8761581.jpeg',
-    category: '科技',
-    attendees: 850,
-    maxAttendees: 1500,
-    rating: 4.6,
-    price: '免費',
-  },
-  {
-    id: '3',
-    title: '當代藝術特展',
-    date: '2025-02-25',
-    time: '14:00',
-    location: '台北當代藝術館',
-    image: 'https://images.pexels.com/photos/1839919/pexels-photo-1839919.jpeg',
-    category: '展覽',
-    attendees: 320,
-    maxAttendees: 500,
-    rating: 4.9,
-    price: 'NT$ 350',
-  },
-];
 
 const categories = ['全部', '音樂', '科技', '展覽', '運動', '美食', '教育'];
 
 export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('全部');
 
-  const filteredEvents = selectedCategory === '全部' 
-    ? mockEvents 
-    : mockEvents.filter(event => event.category === selectedCategory);
+  const filteredEvents =
+    selectedCategory === '全部'
+      ? mockEventDetails
+      : mockEventDetails.filter((event) => event.category === selectedCategory);
 
-  const featuredEvents = mockEvents.filter(event => event.featured);
+  const featuredEvents = mockEventDetails.filter((event) => event.featured);
 
-  const renderFeaturedEvent = ({ item }: { item: Event }) => (
+  const renderFeaturedEvent = ({ item }: { item: EventDetails }) => (
     <TouchableOpacity
       style={styles.featuredCard}
       onPress={() => router.push(`/event-details?id=${item.id}`)}
@@ -100,7 +44,9 @@ export default function HomeScreen() {
         <Text style={styles.featuredTitle}>{item.title}</Text>
         <View style={styles.featuredInfo}>
           <Calendar size={16} color="#fff" />
-          <Text style={styles.featuredDate}>{item.date} · {item.time}</Text>
+          <Text style={styles.featuredDate}>
+            {item.date} · {item.time}
+          </Text>
         </View>
         <View style={styles.featuredInfo}>
           <MapPin size={16} color="#fff" />
@@ -110,7 +56,7 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderEventCard = ({ item }: { item: Event }) => (
+  const renderEventCard = ({ item }: { item: EventDetails }) => (
     <TouchableOpacity
       style={styles.eventCard}
       onPress={() => router.push(`/event-details?id=${item.id}`)}
@@ -125,7 +71,7 @@ export default function HomeScreen() {
             <Text style={styles.rating}>{item.rating}</Text>
           </View>
         </View>
-        
+
         <View style={styles.eventMeta}>
           <View style={styles.metaItem}>
             <Calendar size={14} color="#6B7280" />
@@ -213,9 +159,7 @@ export default function HomeScreen() {
         <View style={styles.eventsSection}>
           <Text style={styles.sectionTitle}>最新活動</Text>
           {filteredEvents.map((event) => (
-            <View key={event.id}>
-              {renderEventCard({ item: event })}
-            </View>
+            <View key={event.id}>{renderEventCard({ item: event })}</View>
           ))}
         </View>
       </ScrollView>

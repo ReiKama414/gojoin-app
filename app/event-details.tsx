@@ -12,104 +12,36 @@ import {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
-import { 
-  ArrowLeft, 
-  Share, 
+import {
+  ArrowLeft,
+  Share,
   Heart,
   Calendar,
   MapPin,
-  Clock,
   Users,
   Star,
   User,
-  Info,
-  Navigation
+  Navigation,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { mockEventDetails } from '@/lib/data';
 
-const { width, height } = Dimensions.get('window');
-
-interface EventDetails {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  endTime: string;
-  location: string;
-  address: string;
-  image: string;
-  organizer: string;
-  category: string;
-  attendees: number;
-  maxAttendees: number;
-  rating: number;
-  price: string;
-  tags: string[];
-  highlights: string[];
-}
-
-const mockEventDetails: Record<string, EventDetails> = {
-  '1': {
-    id: '1',
-    title: '台北國際音樂節 2025',
-    description: '一年一度的台北國際音樂節即將盛大開幕！這次活動將邀請來自世界各地的知名音樂家和樂團，為您帶來一場視聽盛宴。活動包括古典音樂、爵士樂、流行音樂等多種風格，適合所有年齡層的音樂愛好者參與。\n\n現場將設有多個舞台，同時進行不同類型的演出，讓您可以根據個人喜好選擇觀賞。此外，還有音樂工作坊、樂器體驗區等互動活動，讓您更深入了解音樂的魅力。',
-    date: '2025-02-15',
-    time: '19:00',
-    endTime: '23:00',
-    location: '台北市信義區',
-    address: '台北市信義區信義路五段7號',
-    image: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
-    organizer: '台北市文化局',
-    category: '音樂',
-    attendees: 1250,
-    maxAttendees: 2000,
-    rating: 4.8,
-    price: 'NT$ 1,200',
-    tags: ['音樂節', '國際', '多元風格', '互動體驗'],
-    highlights: [
-      '國際知名音樂家演出',
-      '多個舞台同時演出',
-      '音樂工作坊體驗',
-      '專業音響設備',
-      '美食攤位'
-    ],
-  },
-  '2': {
-    id: '2',
-    title: 'AI 科技展覽會',
-    description: '探索人工智慧的無限可能！本次展覽會將展示最新的 AI 技術發展，包括機器學習、深度學習、自然語言處理等領域的創新應用。\n\n展覽分為多個主題區域，包括 AI 在醫療、教育、交通、娛樂等各個領域的應用展示。參觀者可以親身體驗各種 AI 產品和服務，了解 AI 如何改變我們的生活。',
-    date: '2025-02-20',
-    time: '10:00',
-    endTime: '18:00',
-    location: '南港展覽館',
-    address: '台北市南港區經貿二路1號',
-    image: 'https://images.pexels.com/photos/8761581/pexels-photo-8761581.jpeg',
-    organizer: '台灣科技協會',
-    category: '科技',
-    attendees: 850,
-    maxAttendees: 1500,
-    rating: 4.6,
-    price: '免費',
-    tags: ['人工智慧', '科技展', '創新', '免費參觀'],
-    highlights: [
-      'AI 技術現場展示',
-      '互動體驗區',
-      '專家講座',
-      '新創公司展示',
-      '網絡交流機會'
-    ],
-  },
-};
+const { height } = Dimensions.get('window');
 
 export default function EventDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: any }>();
   const [isLiked, setIsLiked] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const event = mockEventDetails[id || '1'];
+  const eventIndex = parseInt(id) - 1;
+  const event = mockEventDetails[eventIndex];
 
-  if (!event) {
+  if (
+    isNaN(eventIndex) ||
+    eventIndex < 0 ||
+    eventIndex >= mockEventDetails.length ||
+    !event
+  ) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>活動資料載入失敗</Text>
@@ -128,7 +60,7 @@ export default function EventDetailsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    router.push(`/registration?eventId=${event.id}`);
+    router.push(`/registration?eventId=${eventIndex + 1}`);
   };
 
   const availableSpots = event.maxAttendees - event.attendees;
@@ -144,16 +76,16 @@ export default function EventDetailsScreen() {
             colors={['transparent', 'rgba(0,0,0,0.6)']}
             style={styles.heroGradient}
           />
-          
+
           {/* Header Overlay */}
-          <BlurView intensity={80} style={styles.headerOverlay}>
+          <View style={styles.headerOverlay}>
             <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
               <ArrowLeft size={24} color="#fff" />
             </TouchableOpacity>
-            
+
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.actionButton}>
                 <Share size={24} color="#fff" />
@@ -162,14 +94,14 @@ export default function EventDetailsScreen() {
                 style={styles.actionButton}
                 onPress={handleLike}
               >
-                <Heart 
-                  size={24} 
-                  color={isLiked ? "#EF4444" : "#fff"}
-                  fill={isLiked ? "#EF4444" : "none"}
+                <Heart
+                  size={24}
+                  color={isLiked ? '#EF4444' : '#fff'}
+                  fill={isLiked ? '#EF4444' : 'none'}
                 />
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </View>
 
           {/* Event Badge */}
           <View style={styles.categoryBadge}>
@@ -198,7 +130,9 @@ export default function EventDetailsScreen() {
               <View style={styles.metaContent}>
                 <Text style={styles.metaTitle}>日期時間</Text>
                 <Text style={styles.metaText}>{event.date}</Text>
-                <Text style={styles.metaSubtext}>{event.time} - {event.endTime}</Text>
+                <Text style={styles.metaSubtext}>
+                  {event.time} - {event.endTime}
+                </Text>
               </View>
             </View>
 
@@ -233,24 +167,26 @@ export default function EventDetailsScreen() {
               <Users size={20} color="#6B7280" />
               <Text style={styles.availabilityTitle}>報名狀況</Text>
             </View>
-            
+
             <View style={styles.availabilityBar}>
-              <View 
+              <View
                 style={[
-                  styles.availabilityFill, 
-                  { width: `${100 - availabilityPercentage}%` }
-                ]} 
+                  styles.availabilityFill,
+                  { width: `${100 - availabilityPercentage}%` },
+                ]}
               />
             </View>
-            
+
             <View style={styles.availabilityInfo}>
               <Text style={styles.attendeesText}>
                 已報名：{event.attendees} 人
               </Text>
-              <Text style={[
-                styles.spotsText,
-                { color: availableSpots < 100 ? '#EF4444' : '#10B981' }
-              ]}>
+              <Text
+                style={[
+                  styles.spotsText,
+                  { color: availableSpots < 100 ? '#EF4444' : '#10B981' },
+                ]}
+              >
                 剩餘：{availableSpots} 個名額
               </Text>
             </View>
@@ -270,10 +206,13 @@ export default function EventDetailsScreen() {
           {/* Description */}
           <View style={styles.descriptionSection}>
             <Text style={styles.sectionTitle}>活動介紹</Text>
-            <Text style={styles.description} numberOfLines={showFullDescription ? undefined : 4}>
+            <Text
+              style={styles.description}
+              numberOfLines={showFullDescription ? undefined : 4}
+            >
               {event.description}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.readMoreButton}
               onPress={() => setShowFullDescription(!showFullDescription)}
             >
@@ -305,7 +244,7 @@ export default function EventDetailsScreen() {
         <TouchableOpacity
           style={[
             styles.registerButton,
-            availableSpots === 0 && styles.registerButtonDisabled
+            availableSpots === 0 && styles.registerButtonDisabled,
           ]}
           onPress={handleRegister}
           disabled={availableSpots === 0}

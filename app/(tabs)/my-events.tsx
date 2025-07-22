@@ -8,45 +8,17 @@ import {
   Image,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Calendar, MapPin, Clock, QrCode, Bell, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  QrCode,
+  Bell,
+  CircleCheck as CheckCircle,
+  CircleAlert as AlertCircle,
+} from 'lucide-react-native';
 import { router } from 'expo-router';
-
-interface RegisteredEvent {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  image: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
-  qrCode: string;
-  reminderSet: boolean;
-}
-
-const mockRegisteredEvents: RegisteredEvent[] = [
-  {
-    id: '1',
-    title: '台北國際音樂節 2025',
-    date: '2025-02-15',
-    time: '19:00',
-    location: '台北市信義區',
-    image: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
-    status: 'upcoming',
-    qrCode: 'MUSIC2025-USER123-EVENT001',
-    reminderSet: true,
-  },
-  {
-    id: '2',
-    title: 'AI 科技展覽會',
-    date: '2025-01-25',
-    time: '10:00',
-    location: '南港展覽館',
-    image: 'https://images.pexels.com/photos/8761581/pexels-photo-8761581.jpeg',
-    status: 'completed',
-    qrCode: 'TECH2025-USER123-EVENT002',
-    reminderSet: false,
-  },
-];
+import { mockEventDetails } from '@/lib/data';
 
 const getStatusInfo = (status: string) => {
   switch (status) {
@@ -82,15 +54,18 @@ const getStatusInfo = (status: string) => {
 };
 
 export default function MyEventsScreen() {
-  const [selectedTab, setSelectedTab] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [selectedTab, setSelectedTab] = useState<
+    'all' | 'upcoming' | 'completed'
+  >('all');
 
-  const filteredEvents = selectedTab === 'all' 
-    ? mockRegisteredEvents 
-    : mockRegisteredEvents.filter(event => 
-        selectedTab === 'upcoming' 
-          ? event.status === 'upcoming' || event.status === 'ongoing'
-          : event.status === 'completed'
-      );
+  const filteredEvents =
+    selectedTab === 'all'
+      ? mockEventDetails
+      : mockEventDetails.filter((event) =>
+          selectedTab === 'upcoming'
+            ? event.status === 'upcoming' || event.status === 'ongoing'
+            : event.status === 'completed'
+        );
 
   const renderEventCard = (event: RegisteredEvent) => {
     const statusInfo = getStatusInfo(event.status);
@@ -104,11 +79,16 @@ export default function MyEventsScreen() {
         activeOpacity={0.9}
       >
         <Image source={{ uri: event.image }} style={styles.eventImage} />
-        
+
         <View style={styles.eventContent}>
           <View style={styles.eventHeader}>
             <Text style={styles.eventTitle}>{event.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusInfo.backgroundColor }]}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: statusInfo.backgroundColor },
+              ]}
+            >
               <StatusIcon size={12} color={statusInfo.color} />
               <Text style={[styles.statusText, { color: statusInfo.color }]}>
                 {statusInfo.text}
@@ -119,7 +99,9 @@ export default function MyEventsScreen() {
           <View style={styles.eventMeta}>
             <View style={styles.metaItem}>
               <Calendar size={16} color="#6B7280" />
-              <Text style={styles.metaText}>{event.date} · {event.time}</Text>
+              <Text style={styles.metaText}>
+                {event.date} · {event.time}
+              </Text>
             </View>
             <View style={styles.metaItem}>
               <MapPin size={16} color="#6B7280" />
@@ -137,11 +119,16 @@ export default function MyEventsScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.reminderButton}>
-              <Bell size={18} color={event.reminderSet ? "#10B981" : "#6B7280"} />
-              <Text style={[
-                styles.reminderButtonText,
-                { color: event.reminderSet ? "#10B981" : "#6B7280" }
-              ]}>
+              <Bell
+                size={18}
+                color={event.reminderSet ? '#10B981' : '#6B7280'}
+              />
+              <Text
+                style={[
+                  styles.reminderButtonText,
+                  { color: event.reminderSet ? '#10B981' : '#6B7280' },
+                ]}
+              >
                 {event.reminderSet ? '已設提醒' : '設定提醒'}
               </Text>
             </TouchableOpacity>
@@ -166,7 +153,12 @@ export default function MyEventsScreen() {
           style={[styles.tab, selectedTab === 'all' && styles.tabActive]}
           onPress={() => setSelectedTab('all')}
         >
-          <Text style={[styles.tabText, selectedTab === 'all' && styles.tabTextActive]}>
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === 'all' && styles.tabTextActive,
+            ]}
+          >
             全部
           </Text>
         </TouchableOpacity>
@@ -174,7 +166,12 @@ export default function MyEventsScreen() {
           style={[styles.tab, selectedTab === 'upcoming' && styles.tabActive]}
           onPress={() => setSelectedTab('upcoming')}
         >
-          <Text style={[styles.tabText, selectedTab === 'upcoming' && styles.tabTextActive]}>
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === 'upcoming' && styles.tabTextActive,
+            ]}
+          >
             即將參加
           </Text>
         </TouchableOpacity>
@@ -182,7 +179,12 @@ export default function MyEventsScreen() {
           style={[styles.tab, selectedTab === 'completed' && styles.tabActive]}
           onPress={() => setSelectedTab('completed')}
         >
-          <Text style={[styles.tabText, selectedTab === 'completed' && styles.tabTextActive]}>
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === 'completed' && styles.tabTextActive,
+            ]}
+          >
             已參加
           </Text>
         </TouchableOpacity>

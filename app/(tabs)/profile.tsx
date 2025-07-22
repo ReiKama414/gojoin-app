@@ -23,19 +23,10 @@ import {
   Pizza,
   Github,
 } from 'lucide-react-native';
+import { user } from '@/lib/data';
 
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
-  const user = {
-    name: '小帥',
-    email: 'xiaoshuai@example.com',
-    phone: '+886 913 666 777',
-    avatar:
-      'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
-    eventsAttended: 12,
-    memberSince: '2025年7月',
-  };
 
   const menuItems = [
     {
@@ -148,12 +139,20 @@ export default function ProfileScreen() {
 
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{user.eventsAttended}</Text>
+              <Text
+                style={styles.statNumber}
+              >
+                {user.eventsAttended}
+              </Text>
               <Text style={styles.statLabel}>參加活動</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{user.memberSince}</Text>
+              <Text
+                style={styles.statNumber}
+              >
+                {user.memberSince}
+              </Text>
               <Text style={styles.statLabel}>加入時間</Text>
             </View>
           </View>
@@ -271,6 +270,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
+    width: '100%',
   },
   statItem: {
     alignItems: 'center',
