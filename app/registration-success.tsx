@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Animated,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,10 +22,58 @@ import {
   ArrowLeft,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import QRCode from 'react-native-qrcode-svg';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export default function RegistrationSuccessScreen() {
+  const qrRef = useRef<any>(null);
   const scaleAnim = new Animated.Value(0);
   const fadeAnim = new Animated.Value(0);
+
+  const handleDownload = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert('無法下載', '目前不支援在瀏覽器下載圖片，請使用手機 App');
+      return;
+    }
+
+    if (!qrRef.current) return;
+
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
+      alert('需要媒體庫權限才能儲存圖片');
+      return;
+    }
+
+    qrRef.current.toDataURL(async (dataURL: string) => {
+      const fileUri = FileSystem.documentDirectory + 'qrcode.png';
+      await FileSystem.writeAsStringAsync(fileUri, dataURL, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const asset = await MediaLibrary.createAssetAsync(fileUri);
+      await MediaLibrary.createAlbumAsync('Download', asset, false);
+      alert('圖片已儲存至相簿');
+    });
+  };
+
+  const handleShare = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert('無法分享', '目前不支援在瀏覽器分享圖片，請使用手機 App');
+      return;
+    }
+    if (!qrRef.current) return;
+
+    qrRef.current.toDataURL(async (dataURL: string) => {
+      const fileUri = FileSystem.documentDirectory + 'qrcode.png';
+      await FileSystem.writeAsStringAsync(fileUri, dataURL, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      await Sharing.shareAsync(fileUri);
+    });
+  };
 
   useEffect(() => {
     // Success haptic feedback
@@ -117,17 +166,31 @@ export default function RegistrationSuccessScreen() {
 
           <View style={styles.qrContainer}>
             <View style={styles.qrCodePlaceholder}>
-              <QrCode size={120} color="#1E1E1E" />
+              <QRCode
+                value={qrCodeData}
+                size={120}
+                color="#1E1E1E"
+                backgroundColor="#FFFFFF"
+                getRef={(c) => {
+                  qrRef.current = c;
+                }}
+              />
               <Text style={styles.qrCodeText}>{qrCodeData}</Text>
             </View>
           </View>
 
           <View style={styles.qrActions}>
-            <TouchableOpacity style={styles.qrActionButton}>
+            <TouchableOpacity
+              style={styles.qrActionButton}
+              onPress={handleDownload}
+            >
               <Download size={20} color="#10B981" />
               <Text style={styles.qrActionText}>下載圖片</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.qrActionButton}>
+            <TouchableOpacity
+              style={styles.qrActionButton}
+              onPress={handleShare}
+            >
               <Share size={20} color="#10B981" />
               <Text style={styles.qrActionText}>分享</Text>
             </TouchableOpacity>
@@ -377,7 +440,8 @@ const styles = StyleSheet.create({
     color: '#10B981',
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    color: '#fff',
+    backgroundColor: 'rgba(85, 85, 85, 0.64)',
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',

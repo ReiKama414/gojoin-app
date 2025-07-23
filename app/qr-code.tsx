@@ -10,7 +10,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, router } from 'expo-router';
-import { 
+import {
   ArrowLeft,
   QrCode,
   Sun,
@@ -18,9 +18,10 @@ import {
   Share,
   Calendar,
   MapPin,
-  Clock
+  Clock,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function QRCodeScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -72,24 +73,23 @@ export default function QRCodeScreen() {
       />
 
       {/* Header */}
-      <BlurView 
-        intensity={brightness ? 50 : 80} 
-        style={styles.header}
-      >
+      <BlurView intensity={brightness ? 50 : 80} style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <ArrowLeft size={24} color={brightness ? "#1E1E1E" : "#fff"} />
+          <ArrowLeft size={24} color={brightness ? '#1E1E1E' : '#fff'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, brightness && styles.headerTitleBright]}>
+        <Text
+          style={[styles.headerTitle, brightness && styles.headerTitleBright]}
+        >
           入場憑證
         </Text>
         <TouchableOpacity
           style={styles.brightnessButton}
           onPress={toggleBrightness}
         >
-          <Sun size={24} color={brightness ? "#F59E0B" : "#fff"} />
+          <Sun size={24} color={brightness ? '#F59E0B' : '#fff'} />
         </TouchableOpacity>
       </BlurView>
 
@@ -99,25 +99,46 @@ export default function QRCodeScreen() {
           <Text style={[styles.eventTitle, brightness && styles.textBright]}>
             {eventData.title}
           </Text>
-          
+
           <View style={styles.eventDetails}>
             <View style={styles.eventDetailItem}>
-              <Calendar size={16} color={brightness ? "#6B7280" : "rgba(255,255,255,0.8)"} />
-              <Text style={[styles.eventDetailText, brightness && styles.textBright]}>
+              <Calendar
+                size={16}
+                color={brightness ? '#6B7280' : 'rgba(255,255,255,0.8)'}
+              />
+              <Text
+                style={[
+                  styles.eventDetailText,
+                  brightness && styles.textBright,
+                ]}
+              >
                 {eventData.date} · {eventData.time}
               </Text>
             </View>
-            
+
             <View style={styles.eventDetailItem}>
-              <MapPin size={16} color={brightness ? "#6B7280" : "rgba(255,255,255,0.8)"} />
-              <Text style={[styles.eventDetailText, brightness && styles.textBright]}>
+              <MapPin
+                size={16}
+                color={brightness ? '#6B7280' : 'rgba(255,255,255,0.8)'}
+              />
+              <Text
+                style={[
+                  styles.eventDetailText,
+                  brightness && styles.textBright,
+                ]}
+              >
                 {eventData.location}
               </Text>
             </View>
-            
+
             <View style={styles.eventDetailItem}>
-              <Clock size={16} color={brightness ? "#F59E0B" : "#FCD34D"} />
-              <Text style={[styles.countdownText, brightness && styles.countdownTextBright]}>
+              <Clock size={16} color={brightness ? '#F59E0B' : '#FCD34D'} />
+              <Text
+                style={[
+                  styles.countdownText,
+                  brightness && styles.countdownTextBright,
+                ]}
+              >
                 距離活動開始：{eventData.countdown}
               </Text>
             </View>
@@ -125,60 +146,89 @@ export default function QRCodeScreen() {
         </View>
 
         {/* QR Code */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.qrContainer,
             brightness && styles.qrContainerBright,
-            { transform: [{ scale: pulseAnim }] }
+            { transform: [{ scale: pulseAnim }] },
           ]}
         >
-          <View style={[styles.qrCodeWrapper, brightness && styles.qrCodeWrapperBright]}>
-            <QrCode 
-              size={200} 
-              color={brightness ? "#1E1E1E" : "#000"} 
-              strokeWidth={1}
+          <View
+            style={[
+              styles.qrCodeWrapper,
+              brightness && styles.qrCodeWrapperBright,
+            ]}
+          >
+            <QRCode
+              value={eventData.qrCode}
+              size={120}
+              color="#1E1E1E"
+              backgroundColor="#FFFFFF"
             />
-            <Text style={[styles.qrCodeData, brightness && styles.qrCodeDataBright]}>
+            <Text
+              style={[styles.qrCodeData, brightness && styles.qrCodeDataBright]}
+            >
               {eventData.qrCode}
             </Text>
           </View>
-          
-          <Text style={[styles.qrInstructions, brightness && styles.textBright]}>
+
+          <Text
+            style={[styles.qrInstructions, brightness && styles.textBright]}
+          >
             請在入場時出示此 QR Code
           </Text>
         </Animated.View>
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={[styles.actionButton, brightness && styles.actionButtonBright]}
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              brightness && styles.actionButtonBright,
+            ]}
           >
-            <Download size={20} color={brightness ? "#10B981" : "#fff"} />
-            <Text style={[styles.actionButtonText, brightness && styles.actionButtonTextBright]}>
+            <Download size={20} color={brightness ? '#10B981' : '#fff'} />
+            <Text
+              style={[
+                styles.actionButtonText,
+                brightness && styles.actionButtonTextBright,
+              ]}
+            >
               儲存圖片
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, brightness && styles.actionButtonBright]}
+
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              brightness && styles.actionButtonBright,
+            ]}
           >
-            <Share size={20} color={brightness ? "#10B981" : "#fff"} />
-            <Text style={[styles.actionButtonText, brightness && styles.actionButtonTextBright]}>
+            <Share size={20} color={brightness ? '#10B981' : '#fff'} />
+            <Text
+              style={[
+                styles.actionButtonText,
+                brightness && styles.actionButtonTextBright,
+              ]}
+            >
               分享憑證
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Important Notes */}
-        <View style={[styles.notesContainer, brightness && styles.notesContainerBright]}>
+        <View
+          style={[
+            styles.notesContainer,
+            brightness && styles.notesContainerBright,
+          ]}
+        >
           <Text style={[styles.notesTitle, brightness && styles.textBright]}>
             重要提醒
           </Text>
           <Text style={[styles.notesText, brightness && styles.textBright]}>
-            • 請確保手機電量充足{'\n'}
-            • 建議提前下載或截圖保存{'\n'}
-            • 入場時需同時出示身分證件{'\n'}
-            • QR Code 僅限本人使用，請勿轉讓
+            • 請確保手機電量充足{'\n'}• 建議提前下載或截圖保存{'\n'}•
+            入場時需同時出示身分證件{'\n'}• QR Code 僅限本人使用，請勿轉讓
           </Text>
         </View>
       </View>

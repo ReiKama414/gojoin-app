@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
   Platform,
+  Share as NativeShare,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -66,6 +67,29 @@ export default function EventDetailsScreen() {
   const availableSpots = event.maxAttendees - event.attendees;
   const availabilityPercentage = (availableSpots / event.maxAttendees) * 100;
 
+  const handleShare = async () => {
+    try {
+      const result = await NativeShare.share({
+        title: event.title,
+        message: `一起來看看這個活動吧！\n\n${event.title}\n${event.description}`,
+        // 沒有 WEB 版 或上架 留空
+        // url: '/event-details?id=' + event.id,
+      });
+
+      if (result.action === NativeShare.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type:', result.activityType);
+        } else {
+          console.log('Shared successfully!');
+        }
+      } else if (result.action === NativeShare.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('分享失敗', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -88,7 +112,7 @@ export default function EventDetailsScreen() {
 
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.actionButton}>
-                <Share size={24} color="#fff" />
+                <Share size={24} color="#fff" onPress={handleShare} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
@@ -312,7 +336,7 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 40,
     left: 20,
     backgroundColor: '#10B981',
     paddingHorizontal: 12,

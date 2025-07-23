@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,14 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, User, Mail, Phone, CircleCheck as CheckCircle, Info } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  CircleCheck as CheckCircle,
+  Info,
+} from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 interface TicketType {
@@ -63,11 +70,61 @@ export default function RegistrationScreen() {
     specialRequirements: '',
   });
 
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    phone: false,
+    specialRequirements: false,
+  });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    specialRequirements: '',
+  });
+
+  const validateName = (name: string) => {
+    if (!name.trim()) return '姓名為必填';
+    if (name.length > 50) return '姓名不可超過 50 字';
+    return '';
+  };
+
+  const validateEmail = (email: string) => {
+    if (!email.trim()) return '電子郵件為必填';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return '電子郵件格式錯誤';
+    return '';
+  };
+
+  const validatePhone = (phone: string) => {
+    if (!phone.trim()) return '手機號碼為必填';
+    const phoneRegex = /^[+\d][\d\s-]{6,}$/;
+    if (!phoneRegex.test(phone)) return '手機號碼格式錯誤';
+    return '';
+  };
+
+  const validateSpecialRequirements = (text: string) => {
+    if (text.length > 200) return '特殊需求不可超過 200 字';
+    return '';
+  };
+
+  useEffect(() => {
+    setErrors({
+      name: validateName(formData.name),
+      email: validateEmail(formData.email),
+      phone: validatePhone(formData.phone),
+      specialRequirements: validateSpecialRequirements(
+        formData.specialRequirements
+      ),
+    });
+  }, [formData]);
+
   const handleNext = () => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -85,52 +142,65 @@ export default function RegistrationScreen() {
   };
 
   const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return formData.name && formData.email && formData.phone;
-      case 2:
-        return selectedTicket !== null;
-      case 3:
-        return true;
-      default:
-        return false;
+    if (currentStep === 1) {
+      return (
+        !errors.name &&
+        !errors.email &&
+        !errors.phone &&
+        formData.name.trim() !== '' &&
+        formData.email.trim() !== '' &&
+        formData.phone.trim() !== ''
+      );
+    } else if (currentStep === 2) {
+      return selectedTicket !== null;
+    } else if (currentStep === 3) {
+      return true;
     }
+    return false;
   };
 
   const renderStepIndicator = () => (
     <View style={styles.stepIndicator}>
       {steps.map((step, index) => (
         <View key={step.id} style={styles.stepItem}>
-          <View style={[
-            styles.stepCircle,
-            currentStep >= step.id && styles.stepCircleActive,
-            currentStep > step.id && styles.stepCircleCompleted,
-          ]}>
+          <View
+            style={[
+              styles.stepCircle,
+              currentStep >= step.id && styles.stepCircleActive,
+              currentStep > step.id && styles.stepCircleCompleted,
+            ]}
+          >
             {currentStep > step.id ? (
               <CheckCircle size={16} color="#fff" />
             ) : (
-              <Text style={[
-                styles.stepNumber,
-                currentStep >= step.id && styles.stepNumberActive,
-              ]}>
+              <Text
+                style={[
+                  styles.stepNumber,
+                  currentStep >= step.id && styles.stepNumberActive,
+                ]}
+              >
                 {step.id}
               </Text>
             )}
           </View>
           <View style={styles.stepText}>
-            <Text style={[
-              styles.stepTitle,
-              currentStep >= step.id && styles.stepTitleActive,
-            ]}>
+            <Text
+              style={[
+                styles.stepTitle,
+                currentStep >= step.id && styles.stepTitleActive,
+              ]}
+            >
               {step.title}
             </Text>
             <Text style={styles.stepDescription}>{step.description}</Text>
           </View>
           {index < steps.length - 1 && (
-            <View style={[
-              styles.stepConnector,
-              currentStep > step.id && styles.stepConnectorActive,
-            ]} />
+            <View
+              style={[
+                styles.stepConnector,
+                currentStep > step.id && styles.stepConnectorActive,
+              ]}
+            />
           )}
         </View>
       ))}
@@ -151,10 +221,18 @@ export default function RegistrationScreen() {
           <TextInput
             style={styles.input}
             placeholder="請輸入您的姓名"
+            placeholderTextColor="#b9bfc9ff"
+            underlineColorAndroid="transparent"
             value={formData.name}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, name: text }))
+            }
+            onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
           />
         </View>
+        {!!errors.name && touched.name && (
+          <Text style={styles.errorText}>{errors.name}</Text>
+        )}
       </View>
 
       <View style={styles.formGroup}>
@@ -164,12 +242,20 @@ export default function RegistrationScreen() {
           <TextInput
             style={styles.input}
             placeholder="example@email.com"
+            placeholderTextColor="#b9bfc9ff"
+            underlineColorAndroid="transparent"
             value={formData.email}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, email: text }))
+            }
             keyboardType="email-address"
             autoCapitalize="none"
+            onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
           />
         </View>
+        {!!errors.email && touched.email && (
+          <Text style={styles.errorText}>{errors.email}</Text>
+        )}
       </View>
 
       <View style={styles.formGroup}>
@@ -179,11 +265,19 @@ export default function RegistrationScreen() {
           <TextInput
             style={styles.input}
             placeholder="0912-345-678"
+            placeholderTextColor="#b9bfc9ff"
+            underlineColorAndroid="transparent"
             value={formData.phone}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, phone: text }))
+            }
             keyboardType="phone-pad"
+            onBlur={() => setTouched((prev) => ({ ...prev, phone: true }))}
           />
         </View>
+        {!!errors.phone && touched.phone && (
+          <Text style={styles.errorText}>{errors.phone}</Text>
+        )}
       </View>
 
       <View style={styles.formGroup}>
@@ -193,8 +287,12 @@ export default function RegistrationScreen() {
           <TextInput
             style={styles.input}
             placeholder="緊急聯絡人電話"
+            placeholderTextColor="#b9bfc9ff"
+            underlineColorAndroid="transparent"
             value={formData.emergencyContact}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, emergencyContact: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, emergencyContact: text }))
+            }
             keyboardType="phone-pad"
           />
         </View>
@@ -206,12 +304,25 @@ export default function RegistrationScreen() {
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="如有特殊需求請告知（輪椅通道、素食等）"
+            placeholderTextColor="#b9bfc9ff"
+            underlineColorAndroid="transparent"
             value={formData.specialRequirements}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, specialRequirements: text }))}
+            onChangeText={(text) =>
+              setFormData((prev) => ({ ...prev, specialRequirements: text }))
+            }
             multiline
             numberOfLines={3}
+            onBlur={() =>
+              setTouched((prev) => ({
+                ...prev,
+                specialRequirements: true,
+              }))
+            }
           />
         </View>
+        {!!errors.specialRequirements && touched.specialRequirements && (
+          <Text style={styles.errorText}>{errors.specialRequirements}</Text>
+        )}
       </View>
     </View>
   );
@@ -219,9 +330,7 @@ export default function RegistrationScreen() {
   const renderStep2 = () => (
     <View style={styles.stepContent}>
       <Text style={styles.stepContentTitle}>選擇票種</Text>
-      <Text style={styles.stepContentDescription}>
-        請選擇適合的票券類型
-      </Text>
+      <Text style={styles.stepContentDescription}>請選擇適合的票券類型</Text>
 
       {ticketTypes.map((ticket) => (
         <TouchableOpacity
@@ -235,15 +344,19 @@ export default function RegistrationScreen() {
           <View style={styles.ticketInfo}>
             <Text style={styles.ticketName}>{ticket.name}</Text>
             <Text style={styles.ticketDescription}>{ticket.description}</Text>
-            <Text style={styles.ticketAvailable}>剩餘 {ticket.available} 張</Text>
+            <Text style={styles.ticketAvailable}>
+              剩餘 {ticket.available} 張
+            </Text>
           </View>
           <View style={styles.ticketPrice}>
             <Text style={styles.ticketPriceText}>{ticket.price}</Text>
           </View>
-          <View style={[
-            styles.radioButton,
-            selectedTicket === ticket.id && styles.radioButtonSelected,
-          ]}>
+          <View
+            style={[
+              styles.radioButton,
+              selectedTicket === ticket.id && styles.radioButtonSelected,
+            ]}
+          >
             {selectedTicket === ticket.id && (
               <View style={styles.radioButtonInner} />
             )}
@@ -253,16 +366,14 @@ export default function RegistrationScreen() {
 
       <View style={styles.infoBox}>
         <Info size={16} color="#3B82F6" />
-        <Text style={styles.infoText}>
-          學生票需於現場出示有效學生證件
-        </Text>
+        <Text style={styles.infoText}>學生票需於現場出示有效學生證件</Text>
       </View>
     </View>
   );
 
   const renderStep3 = () => {
-    const selectedTicketData = ticketTypes.find(t => t.id === selectedTicket);
-    
+    const selectedTicketData = ticketTypes.find((t) => t.id === selectedTicket);
+
     return (
       <View style={styles.stepContent}>
         <Text style={styles.stepContentTitle}>確認報名資料</Text>
@@ -290,11 +401,15 @@ export default function RegistrationScreen() {
           <Text style={styles.confirmationSectionTitle}>票券資訊</Text>
           <View style={styles.confirmationItem}>
             <Text style={styles.confirmationLabel}>票種</Text>
-            <Text style={styles.confirmationValue}>{selectedTicketData?.name}</Text>
+            <Text style={styles.confirmationValue}>
+              {selectedTicketData?.name}
+            </Text>
           </View>
           <View style={styles.confirmationItem}>
             <Text style={styles.confirmationLabel}>價格</Text>
-            <Text style={styles.confirmationValue}>{selectedTicketData?.price}</Text>
+            <Text style={styles.confirmationValue}>
+              {selectedTicketData?.price}
+            </Text>
           </View>
         </View>
 
@@ -303,7 +418,8 @@ export default function RegistrationScreen() {
             <CheckCircle size={20} color="#10B981" />
           </View>
           <Text style={styles.termsText}>
-            我已閱讀並同意 <Text style={styles.termsLink}>服務條款</Text> 和 <Text style={styles.termsLink}>隱私政策</Text>
+            我已閱讀並同意 <Text style={styles.termsLink}>服務條款</Text> 和{' '}
+            <Text style={styles.termsLink}>隱私政策</Text>
           </Text>
         </View>
       </View>
@@ -314,10 +430,7 @@ export default function RegistrationScreen() {
     <View style={styles.container}>
       {/* Header */}
       <BlurView intensity={100} style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleBack}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <ArrowLeft size={24} color="#1E1E1E" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>活動報名</Text>
@@ -493,6 +606,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1E1E1E',
     marginLeft: 12,
+    padding: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+
+    ...(Platform.OS === 'web' && {
+      outlineWidth: 0,
+      outlineColor: 'transparent',
+    }),
   },
   textArea: {
     marginLeft: 0,
@@ -647,5 +768,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
