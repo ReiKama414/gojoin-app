@@ -289,9 +289,6 @@ export default function ProfileScreen() {
       <BlurView intensity={100} style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>個人檔案</Text>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Settings size={24} color="#6B7280" />
-          </TouchableOpacity>
         </View>
       </BlurView>
 
